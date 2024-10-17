@@ -3,9 +3,9 @@
 /var/
 /vendor/
 /node_modules/
+.env
 /public/bundles/
 .env.local
 .DS_Store
 .idea/
 .vscode/
-.env
