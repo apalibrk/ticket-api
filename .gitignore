@@ -1,0 +1,10 @@
+# .gitignore
+
+/var/
+/vendor/
+/node_modules/
+/public/bundles/
+.env.local
+.DS_Store
+.idea/
+.vscode/
