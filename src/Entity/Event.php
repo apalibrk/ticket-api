@@ -2,40 +2,47 @@
 
 namespace App\Entity;
 
-use App\Repository\EventRepository;
+use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
+use OpenApi\Attributes as OA;
 
 #[ORM\Entity(repositoryClass: EventRepository::class)]
-class Event
+#[OA\Schema(description: "Represents an event")]
+class Event implements \JsonSerializable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[OA\Property(description: "Unique identifier of the event", example: 1)]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[OA\Property(description: "Title of the event", example: "SymfonyCon 2024")]
     private ?string $title = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: "datetime")]
+    #[OA\Property(type: "string", format: "date-time", description: "Date and time of the event", example: "2024-12-12T19:30:00Z")]
     private ?\DateTimeInterface $date = null;
 
     #[ORM\Column(length: 255)]
+    #[OA\Property(description: "Venue of the event", example: "Berlin, Germany")]
     private ?string $venue = null;
 
     #[ORM\Column]
+    #[OA\Property(description: "Capacity of the event", example: 500)]
     private ?int $capacity = null;
 
     #[ORM\ManyToOne(inversedBy: 'events')]
     #[ORM\JoinColumn(nullable: false)]
+    #[OA\Property(description: "Organizer of the event", ref: '#/components/schemas/Organizer')]
     private ?Organizer $organizer = null;
 
     /**
      * @var Collection<int, Ticket>
      */
-    #[ORM\OneToMany(targetEntity: Ticket::class, mappedBy: 'event', orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'event', targetEntity: Ticket::class, orphanRemoval: true)]
+    #[OA\Property(description: "Tickets associated with the event", type: "array", items: new OA\Items(ref: '#/components/schemas/Ticket'))]
     private Collection $tickets;
 
     public function __construct()
@@ -138,4 +145,16 @@ class Event
         return $this;
     }
 
+    public function jsonSerialize()
+    {
+        return [
+            'id' => $this->id,
+            'title' => $this->title,
+            'date' => $this->date->format('Y-m-d H:i:s'),
+            'venue' => $this->venue,
+            'capacity' => $this->capacity,
+            'organizer' => $this->organizer ? $this->organizer->getId() : null,
+            'tickets' => $this->tickets->map(fn($ticket) => $ticket->getId())->toArray(),
+        ];
+    }
 }

@@ -1,5 +1,4 @@
 <?php
-// src/Controller/OrganizerController.php
 
 namespace App\Controller;
 
@@ -10,10 +9,14 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use OpenApi\Attributes as OA;
+use Nelmio\ApiDocBundle\Annotation\Model;
 
+#[Route('/api/organizers')]
+#[OA\Tag(name: "organizers")]
 class OrganizerController extends AbstractController
 {
-    private $organizerService;
+    private OrganizerService $organizerService;
 
     public function __construct(OrganizerService $organizerService)
     {
@@ -21,8 +24,19 @@ class OrganizerController extends AbstractController
     }
 
     /**
-     * @Route("/api/organizers", methods={"POST"})
+     * Create a new organizer.
+     *
+     * @OA\RequestBody(
+     *     description="Organizer data",
+     *     @OA\JsonContent(ref=@Model(type=OrganizerDTO::class))
+     * )
+     * @OA\Response(
+     *     response=201,
+     *     description="Organizer created",
+     *     @OA\JsonContent(ref=@Model(type=Organizer::class))
+     * )
      */
+    #[Route('', methods: ['POST'])]
     public function createOrganizer(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -37,8 +51,25 @@ class OrganizerController extends AbstractController
     }
 
     /**
-     * @Route("/api/organizers/{id}", methods={"PUT"})
+     * Update an existing organizer.
+     *
+     * @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     description="The ID of the organizer to update",
+     *     @OA\Schema(type="integer", example=1)
+     * )
+     * @OA\RequestBody(
+     *     description="Updated organizer data",
+     *     @OA\JsonContent(ref=@Model(type=OrganizerDTO::class))
+     * )
+     * @OA\Response(
+     *     response=200,
+     *     description="Organizer updated",
+     *     @OA\JsonContent(ref=@Model(type=Organizer::class))
+     * )
      */
+    #[Route('/{id}', methods: ['PUT'])]
     public function updateOrganizer(Request $request, Organizer $organizer): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -53,8 +84,20 @@ class OrganizerController extends AbstractController
     }
 
     /**
-     * @Route("/api/organizers/{id}", methods={"DELETE"})
+     * Delete an organizer.
+     *
+     * @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     description="The ID of the organizer to delete",
+     *     @OA\Schema(type="integer", example=1)
+     * )
+     * @OA\Response(
+     *     response=204,
+     *     description="Organizer deleted"
+     * )
      */
+    #[Route('/{id}', methods: ['DELETE'])]
     public function deleteOrganizer(Organizer $organizer): JsonResponse
     {
         $this->organizerService->deleteOrganizer($organizer);
@@ -62,8 +105,18 @@ class OrganizerController extends AbstractController
     }
 
     /**
-     * @Route("/api/organizers", methods={"GET"})
+     * List all organizers.
+     *
+     * @OA\Response(
+     *     response=200,
+     *     description="Returns a list of all organizers",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=Organizer::class, groups={"full"}))
+     *     )
+     * )
      */
+    #[Route('', methods: ['GET'])]
     public function listOrganizers(): JsonResponse
     {
         $organizers = $this->organizerService->findAll();

@@ -1,5 +1,4 @@
 <?php
-// src/Service/OrganizerService.php
 
 namespace App\Service;
 
@@ -8,10 +7,13 @@ use App\DTO\OrganizerDTO;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\OrganizerRepository;
 
+/**
+ * Service class for managing organizers.
+ */
 class OrganizerService
 {
-    private $entityManager;
-    private $organizerRepository;
+    private EntityManagerInterface $entityManager;
+    private OrganizerRepository $organizerRepository;
 
     public function __construct(EntityManagerInterface $entityManager)
     {
@@ -19,6 +21,13 @@ class OrganizerService
         $this->organizerRepository = $entityManager->getRepository(Organizer::class);
     }
 
+    /**
+     * Creates a new organizer.
+     *
+     * @param OrganizerDTO $organizerDTO The data transfer object containing organizer details.
+     * @return Organizer The created organizer.
+     * @throws \InvalidArgumentException If the organizer data is invalid.
+     */
     public function createOrganizer(OrganizerDTO $organizerDTO): Organizer
     {
         if (empty($organizerDTO->getName())) {
@@ -48,8 +57,15 @@ class OrganizerService
     
         return $organizer;
     }
-    
 
+    /**
+     * Updates an existing organizer.
+     *
+     * @param Organizer $organizer The organizer to update.
+     * @param OrganizerDTO $organizerDTO The data transfer object containing updated organizer details.
+     * @return Organizer The updated organizer.
+     * @throws \InvalidArgumentException If the organizer data is invalid.
+     */
     public function updateOrganizer(Organizer $organizer, OrganizerDTO $organizerDTO): Organizer
     {
         if (empty($organizerDTO->getName())) {
@@ -82,12 +98,22 @@ class OrganizerService
         return $organizer;
     }
 
+    /**
+     * Deletes an organizer.
+     *
+     * @param Organizer $organizer The organizer to delete.
+     */
     public function deleteOrganizer(Organizer $organizer): void
     {
         $this->entityManager->remove($organizer);
         $this->entityManager->flush();
     }
 
+    /**
+     * Retrieves all organizers.
+     *
+     * @return Organizer[] An array of all organizers.
+     */
     public function findAll(): array
     {
         return $this->organizerRepository->findAll();

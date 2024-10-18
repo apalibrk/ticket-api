@@ -8,6 +8,9 @@ use App\Entity\Organizer;
 use App\Repository\EventRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * Service class for managing events.
+ */
 class EventService
 {
     private EventRepository $eventRepository;
@@ -19,42 +22,58 @@ class EventService
         $this->entityManager = $entityManager;
     }
 
+    /**
+     * Creates a new event.
+     *
+     * @param EventDTO $eventDTO The data transfer object containing event details.
+     * @return Event The created event.
+     * @throws \InvalidArgumentException If the event data is invalid.
+     */
     public function createEvent(EventDTO $eventDTO): Event
     {
         if ($eventDTO->date < new \DateTime()) {
             throw new \InvalidArgumentException('Event date cannot be in the past');
         }
-    
+
         if (empty($eventDTO->title)) {
             throw new \InvalidArgumentException('Event title cannot be empty');
         }
-    
+
         if (empty($eventDTO->venue)) {
             throw new \InvalidArgumentException('Event venue cannot be empty');
         }
-    
+
         if ($eventDTO->capacity <= 0) {
             throw new \InvalidArgumentException('Event capacity must be greater than zero');
         }
-    
+
         $organizer = $this->entityManager->getRepository(Organizer::class)->find($eventDTO->organizerId);
         if (!$organizer) {
             throw new \InvalidArgumentException('Organizer not found');
         }
-    
+
         $event = new Event();
         $event->setTitle($eventDTO->title)
               ->setDate($eventDTO->date)
               ->setVenue($eventDTO->venue)
               ->setCapacity($eventDTO->capacity)
               ->setOrganizer($organizer);
-    
+
         $this->entityManager->persist($event);
         $this->entityManager->flush();
-    
+
         return $event;
     }
-    
+
+    /**
+     * Updates an existing event.
+     *
+     * @param int $id The ID of the event to update.
+     * @param EventDTO $eventDTO The data transfer object containing updated event details.
+     * @return Event The updated event.
+     * @throws \Exception If the event is not found.
+     * @throws \InvalidArgumentException If the event data is invalid.
+     */
     public function updateEvent(int $id, EventDTO $eventDTO): Event
     {
         $event = $this->eventRepository->find($id);
@@ -78,24 +97,28 @@ class EventService
             throw new \InvalidArgumentException('Event capacity must be greater than zero');
         }
 
-        // Validate the organizer
         $organizer = $this->entityManager->getRepository(Organizer::class)->find($eventDTO->organizerId);
         if (!$organizer) {
             throw new \InvalidArgumentException('Organizer not found');
         }
 
-        // Update the Event object
         $event->setTitle($eventDTO->title)
-            ->setDate($eventDTO->date)
-            ->setVenue($eventDTO->venue)
-            ->setCapacity($eventDTO->capacity)
-            ->setOrganizer($organizer);
+              ->setDate($eventDTO->date)
+              ->setVenue($eventDTO->venue)
+              ->setCapacity($eventDTO->capacity)
+              ->setOrganizer($organizer);
 
         $this->entityManager->flush();
 
         return $event;
     }
 
+    /**
+     * Deletes an event.
+     *
+     * @param int $id The ID of the event to delete.
+     * @throws \Exception If the event is not found.
+     */
     public function deleteEvent(int $id): void
     {
         $event = $this->eventRepository->find($id);
@@ -107,11 +130,22 @@ class EventService
         $this->entityManager->flush();
     }
 
+    /**
+     * Retrieves an event by its ID.
+     *
+     * @param int $id The ID of the event to retrieve.
+     * @return Event|null The event, or null if not found.
+     */
     public function getEvent(int $id): ?Event
     {
         return $this->eventRepository->find($id);
     }
 
+    /**
+     * Retrieves all events.
+     *
+     * @return Event[] An array of all events.
+     */
     public function getAllEvents(): array
     {
         return $this->eventRepository->findAll();

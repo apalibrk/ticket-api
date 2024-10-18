@@ -7,34 +7,37 @@ services:
       dockerfile: Dockerfile
     container_name: ticket_app
     ports:
-      - "8000:80"
+      - "8000:80" # Expose port 80 of the container to port 8000 on the host
     volumes:
-      - .:/var/www/html
+      - .:/var/www/html # Mount the current directory to /var/www/html in the container
     environment:
+      - COMPOSER_ALLOW_SUPERUSER=1
       - APP_ENV=dev
-      - DATABASE_URL=mysql://root:@db:3306/ticket
+      - DATABASE_URL=mysql://root:@db:3306/ticket # Connect to the MySQL container
+    depends_on:
+      - db
 
   db:
-    image: mysql:8.0
+    image: mysql:8.0 # Use MySQL version 8.0
     container_name: ticket_db
     environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-      MYSQL_DATABASE: ticket
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes" # Allow empty root password
+      MYSQL_DATABASE: ticket # Create the database named 'ticket'
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data:/var/lib/mysql # Persist MySQL data
     ports:
-      - "3306:3306"
+      - "3306:3306" # Expose MySQL port
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: ticket_phpmyadmin
     environment:
-      PMA_HOST: db  # Link to the MySQL container
-      MYSQL_ROOT_PASSWORD: ""  # Leave empty if no root password
+      PMA_HOST: db # Link to the MySQL container
+      MYSQL_ROOT_PASSWORD: "" # Leave empty if no root password
     ports:
-      - "8080:80"
+      - "8080:80" # Expose phpMyAdmin on port 8080
     depends_on:
       - db
 
 volumes:
-  db_data:
+  db_data: # Define a volume for MySQL data persistence
