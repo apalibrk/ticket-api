@@ -25,6 +25,7 @@
         "symfony/property-access": "7.1.*",
         "symfony/property-info": "7.1.*",
         "symfony/runtime": "7.1.*",
+        "symfony/security-core": "7.1.*",
         "symfony/serializer": "7.1.*",
         "symfony/twig-bundle": "7.1.*",
         "symfony/yaml": "7.1.*",
@@ -85,6 +86,8 @@
         "phpunit/phpunit": "^9.5",
         "symfony/browser-kit": "7.1.*",
         "symfony/css-selector": "7.1.*",
-        "symfony/phpunit-bridge": "^7.1"
+        "symfony/phpunit-bridge": "^7.1",
+        "symfony/stopwatch": "7.1.*",
+        "symfony/web-profiler-bundle": "7.1.*"
     }
 }

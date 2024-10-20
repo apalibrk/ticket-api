@@ -11,9 +11,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use OpenApi\Attributes as OA;
 use Nelmio\ApiDocBundle\Annotation\Model;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 
 #[Route('/api/organizers')]
-#[OA\Tag(name: "organizers")]
+#[OA\Tag(name: 'Organizers')]
 class OrganizerController extends AbstractController
 {
     private OrganizerService $organizerService;
@@ -23,19 +24,40 @@ class OrganizerController extends AbstractController
         $this->organizerService = $organizerService;
     }
 
-    /**
-     * Create a new organizer.
-     *
-     * @OA\RequestBody(
-     *     description="Organizer data",
-     *     @OA\JsonContent(ref=@Model(type=OrganizerDTO::class))
-     * )
-     * @OA\Response(
-     *     response=201,
-     *     description="Organizer created",
-     *     @OA\JsonContent(ref=@Model(type=Organizer::class))
-     * )
-     */
+    #[OA\Post(
+        summary: 'Create a new organizer.',
+        requestBody: new OA\RequestBody(
+            description: 'Organizer data',
+            required: true,
+            content: new OA\JsonContent(
+                type: 'object',
+                properties: [
+                    new OA\Property(property: 'name', type: 'string', example: 'John Doe', description: 'Name of the organizer'),
+                    new OA\Property(property: 'email', type: 'string', example: 'john.doe@example.com', description: 'Email of the organizer'),
+                    new OA\Property(property: 'phone', type: 'string', example: '+1234567890', description: 'Phone number of the organizer'),
+                    new OA\Property(property: 'password', type: 'string', example: 'password', description: 'Password of the organizer')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: 'Organizer created successfully',
+                content: new OA\JsonContent(ref: new Model(type: Organizer::class, groups: ['full']))
+            ),
+            new OA\Response(response: 400, description: 'Invalid input'),
+            new OA\Response(response: 401, description: 'Unauthorized'),
+            new OA\Response(response: 403, description: 'Forbidden'),
+            new OA\Response(response: 500, description: 'Internal server error')
+        ],
+        security: [
+            new OA\SecurityScheme(
+                securityScheme: 'bearerAuth',
+                type: 'http',
+                scheme: 'bearer'
+            )
+        ]
+    )]
     #[Route('', methods: ['POST'])]
     public function createOrganizer(Request $request): JsonResponse
     {
@@ -50,26 +72,49 @@ class OrganizerController extends AbstractController
         return $this->json($organizer, JsonResponse::HTTP_CREATED);
     }
 
-    /**
-     * Update an existing organizer.
-     *
-     * @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     description="The ID of the organizer to update",
-     *     @OA\Schema(type="integer", example=1)
-     * )
-     * @OA\RequestBody(
-     *     description="Updated organizer data",
-     *     @OA\JsonContent(ref=@Model(type=OrganizerDTO::class))
-     * )
-     * @OA\Response(
-     *     response=200,
-     *     description="Organizer updated",
-     *     @OA\JsonContent(ref=@Model(type=Organizer::class))
-     * )
-     */
+    #[OA\Put(
+        summary: 'Update an existing organizer.',
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'integer', example: 1),
+                description: 'The ID of the organizer to update'
+            )
+        ],
+        requestBody: new OA\RequestBody(
+            description: 'Updated organizer data',
+            required: true,
+            content: new OA\JsonContent(
+                type: 'object',
+                properties: [
+                    new OA\Property(property: 'name', type: 'string', example: 'John Doe', description: 'Name of the organizer'),
+                    new OA\Property(property: 'email', type: 'string', example: 'john.doe@example.com', description: 'Email of the organizer'),
+                    new OA\Property(property: 'phone', type: 'string', example: '+1234567890', description: 'Phone number of the organizer'),
+                    new OA\Property(property: 'password', type: 'string', example: 'password', description: 'Password of the organizer')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Organizer updated successfully',
+                content: new OA\JsonContent(ref: new Model(type: Organizer::class, groups: ['full']))
+            ),
+            new OA\Response(response: 400, description: 'Invalid input'),
+            new OA\Response(response: 404, description: 'Organizer not found')
+        ],
+        security: [
+            new OA\SecurityScheme(
+                securityScheme: 'bearerAuth',
+                type: 'http',
+                scheme: 'bearer'
+            )
+        ]
+    )]
     #[Route('/{id}', methods: ['PUT'])]
+    #[ParamConverter('organizer', class: Organizer::class)]
     public function updateOrganizer(Request $request, Organizer $organizer): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -83,39 +128,47 @@ class OrganizerController extends AbstractController
         return $this->json($updatedOrganizer);
     }
 
-    /**
-     * Delete an organizer.
-     *
-     * @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     description="The ID of the organizer to delete",
-     *     @OA\Schema(type="integer", example=1)
-     * )
-     * @OA\Response(
-     *     response=204,
-     *     description="Organizer deleted"
-     * )
-     */
+    #[OA\Delete(
+        summary: 'Delete an organizer.',
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'integer', example: 1),
+                description: 'The ID of the organizer to delete'
+            )
+        ],
+        responses: [
+            new OA\Response(response: 204, description: 'Organizer deleted successfully'),
+            new OA\Response(response: 404, description: 'Organizer not found')
+        ],
+        security: [
+            new OA\SecurityScheme(
+                securityScheme: 'bearerAuth',
+                type: 'http',
+                scheme: 'bearer'
+            )
+        ]
+    )]
     #[Route('/{id}', methods: ['DELETE'])]
+    #[ParamConverter('organizer', class: Organizer::class)]
     public function deleteOrganizer(Organizer $organizer): JsonResponse
     {
         $this->organizerService->deleteOrganizer($organizer);
         return $this->json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
-    /**
-     * List all organizers.
-     *
-     * @OA\Response(
-     *     response=200,
-     *     description="Returns a list of all organizers",
-     *     @OA\JsonContent(
-     *        type="array",
-     *        @OA\Items(ref=@Model(type=Organizer::class, groups={"full"}))
-     *     )
-     * )
-     */
+    #[OA\Get(
+        summary: 'List all organizers.',
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Returns a list of all organizers',
+                content: new OA\JsonContent(type: 'array', items: new OA\Items(ref: new Model(type: Organizer::class, groups: ['full'])))
+            )
+        ]
+    )]
     #[Route('', methods: ['GET'])]
     public function listOrganizers(): JsonResponse
     {

@@ -20,6 +20,11 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    App\EventListener\TokenAuthenticator:
+        arguments:
+            $staticToken: '%env(API_TOKEN)%'
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

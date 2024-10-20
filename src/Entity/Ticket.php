@@ -7,30 +7,50 @@ use Doctrine\ORM\Mapping as ORM;
 use OpenApi\Attributes as OA;
 
 #[ORM\Entity(repositoryClass: TicketRepository::class)]
-#[OA\Schema(description: "Represents a ticket")]
+
 class Ticket implements \JsonSerializable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[OA\Property(description: "Unique identifier of the ticket", example: 1)]
+    #[OA\Property(
+        description: "Unique identifier of the ticket", 
+        type: "integer", 
+        example: 1
+    )]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
-    #[OA\Property(description: "Seat number of the ticket", example: "A1")]
+    #[OA\Property(
+        description: "Seat number of the ticket", 
+        type: "string", 
+        example: "A1"
+    )]
     private ?string $seatNumber = null;
 
     #[ORM\Column]
-    #[OA\Property(description: "Price of the ticket", example: 99.99)]
+    #[OA\Property(
+        description: "Price of the ticket", 
+        type: "number", 
+        format: "float", 
+        example: 99.99
+    )]
     private ?float $price = null;
 
     #[ORM\Column(length: 40)]
-    #[OA\Property(description: "Status of the ticket", example: "available")]
+    #[OA\Property(
+        description: "Status of the ticket", 
+        type: "string", 
+        example: "available"
+    )]
     private ?string $status = null;
 
     #[ORM\ManyToOne(inversedBy: 'tickets')]
     #[ORM\JoinColumn(nullable: false)]
-    #[OA\Property(description: "Event associated with the ticket", ref: '#/components/schemas/Event')]
+    #[OA\Property(
+        description: "Event associated with the ticket", 
+        ref: '#/components/schemas/EventSchema'
+    )]
     private ?Event $event = null;
 
     public function getId(): ?int
@@ -86,7 +106,7 @@ class Ticket implements \JsonSerializable
         return $this;
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return [
             'id' => $this->id,
