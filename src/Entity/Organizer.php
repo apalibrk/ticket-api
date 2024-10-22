@@ -7,54 +7,55 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use OpenApi\Attributes as OA;
+use Symfony\Component\PasswordHasher\PasswordHasherInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: OrganizerRepository::class)]
-
-// #[OA\Schema(
-//     schema: "Organizer",
-//     type: "object",
-//     required: ["name", "email", "password"],
-//     properties: [
-//         new OA\Property(
-//             property: "id",
-//             type: "integer",
-//             description: "Unique identifier of the organizer",
-//             example: 1
-//         ),
-//         new OA\Property(
-//             property: "name",
-//             type: "string",
-//             description: "Name of the organizer",
-//             example: "John Doe"
-//         ),
-//         new OA\Property(
-//             property: "email",
-//             type: "string",
-//             description: "Email of the organizer",
-//             example: "john.doe@example.com"
-//         ),
-//         new OA\Property(
-//             property: "phone",
-//             type: "string",
-//             description: "Phone number of the organizer",
-//             example: "+1234567890"
-//         ),
-//         new OA\Property(
-//             property: "password",
-//             type: "string",
-//             description: "Password of the organizer",
-//             example: "password"
-//         ),
-//         new OA\Property(
-//             property: "events",
-//             type: "array",
-//             description: "Events organized by the organizer",
-//             items: new OA\Items(ref: "#/components/schemas/EventSchema")
-//         )
-//     ]
-// )]
+#[OA\Schema(
+    schema: "Organizer",
+    description: "Represents an organizer",
+    type: "object",
+    required: ["name", "email", "password"],
+    properties: [
+        new OA\Property(
+            property: "id",
+            type: "integer",
+            description: "Unique identifier of the organizer",
+            example: 1
+        ),
+        new OA\Property(
+            property: "name",
+            type: "string",
+            description: "Name of the organizer",
+            example: "John Doe"
+        ),
+        new OA\Property(
+            property: "email",
+            type: "string",
+            description: "Email of the organizer",
+            example: "john.doe@example.com"
+        ),
+        new OA\Property(
+            property: "phone",
+            type: "string",
+            description: "Phone number of the organizer",
+            example: "+1234567890"
+        ),
+        new OA\Property(
+            property: "password",
+            type: "string",
+            description: "Password of the organizer",
+            example: "password"
+        ),
+        new OA\Property(
+            property: "events",
+            type: "array",
+            description: "Events organized by the organizer",
+            items: new OA\Items(ref: "#/components/schemas/Event")
+        )
+    ]
+)]
 class Organizer implements UserInterface, PasswordAuthenticatedUserInterface, \JsonSerializable
 {
     #[ORM\Id]
@@ -106,7 +107,7 @@ class Organizer implements UserInterface, PasswordAuthenticatedUserInterface, \J
     #[OA\Property(
         description: "Events organized by the organizer", 
         type: "array", 
-        items: new OA\Items(ref: '#/components/schemas/EventSchema')
+        items: new OA\Items(ref: '#/components/schemas/Event')
     )]
     private Collection $events;
 
@@ -191,11 +192,9 @@ class Organizer implements UserInterface, PasswordAuthenticatedUserInterface, \J
         return $this->password;
     }
 
-    public function setPassword(string $password): static
+    public function setPassword(string $plainPassword)
     {
-        $this->password = $password;
-
-        return $this;
+        $this->password = $plainPassword;
     }
 
     public function jsonSerialize(): array

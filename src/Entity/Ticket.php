@@ -7,50 +7,62 @@ use Doctrine\ORM\Mapping as ORM;
 use OpenApi\Attributes as OA;
 
 #[ORM\Entity(repositoryClass: TicketRepository::class)]
-
+#[OA\Schema(
+    schema: "Ticket",
+    description: "Represents a ticket",
+    type: "object",
+    required: ["seatNumber", "price", "status", "event"],
+    properties: [
+        new OA\Property(
+            property: "id",
+            description: "Unique identifier of the ticket",
+            type: "integer",
+            example: 1
+        ),
+        new OA\Property(
+            property: "seatNumber",
+            description: "Seat number of the ticket",
+            type: "string",
+            example: "A1"
+        ),
+        new OA\Property(
+            property: "price",
+            description: "Price of the ticket",
+            type: "number",
+            format: "float",
+            example: 99.99
+        ),
+        new OA\Property(
+            property: "status",
+            description: "Status of the ticket",
+            type: "string",
+            example: "available"
+        ),
+        new OA\Property(
+            property: "event",
+            description: "Event associated with the ticket",
+            ref: "#/components/schemas/Event"
+        )
+    ]
+)]
 class Ticket implements \JsonSerializable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
-    #[OA\Property(
-        description: "Unique identifier of the ticket", 
-        type: "integer", 
-        example: 1
-    )]
+    #[ORM\Column(type: "integer")]
     private ?int $id = null;
 
-    #[ORM\Column(length: 50)]
-    #[OA\Property(
-        description: "Seat number of the ticket", 
-        type: "string", 
-        example: "A1"
-    )]
+    #[ORM\Column(type: "string", length: 50)]
     private ?string $seatNumber = null;
 
-    #[ORM\Column]
-    #[OA\Property(
-        description: "Price of the ticket", 
-        type: "number", 
-        format: "float", 
-        example: 99.99
-    )]
+    #[ORM\Column(type: "float")]
     private ?float $price = null;
 
-    #[ORM\Column(length: 40)]
-    #[OA\Property(
-        description: "Status of the ticket", 
-        type: "string", 
-        example: "available"
-    )]
+    #[ORM\Column(type: "string", length: 40)]
     private ?string $status = null;
 
-    #[ORM\ManyToOne(inversedBy: 'tickets')]
+    #[ORM\ManyToOne(targetEntity: Event::class, inversedBy: "tickets")]
     #[ORM\JoinColumn(nullable: false)]
-    #[OA\Property(
-        description: "Event associated with the ticket", 
-        ref: '#/components/schemas/EventSchema'
-    )]
     private ?Event $event = null;
 
     public function getId(): ?int

@@ -1,22 +1,26 @@
 <?php
+
 namespace App\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 use App\Service\OrganizerService;
 use App\DTO\OrganizerDTO;
 use App\Entity\Organizer;
+use App\Repository\OrganizerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 
 class OrganizerServiceTest extends TestCase
 {
     private $entityManager;
+    private $organizerRepository;
     private $organizerService;
 
     protected function setUp(): void
     {
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        $this->organizerService = new OrganizerService($this->entityManager);
+        $this->organizerRepository = $this->createMock(OrganizerRepository::class);
+        $this->organizerService = new OrganizerService($this->entityManager, $this->organizerRepository);
     }
 
     public function testCreateOrganizerWithEmptyName()

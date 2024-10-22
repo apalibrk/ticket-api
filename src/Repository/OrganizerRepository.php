@@ -15,6 +15,8 @@ class OrganizerRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Organizer::class);
     }
+    
+
 
 //    /**
 //     * @return Organizer[] Returns an array of Organizer objects

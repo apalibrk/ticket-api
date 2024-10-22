@@ -30,7 +30,21 @@ class EventController extends AbstractController
             new OA\Response(
                 response: 200,
                 description: 'Returns a list of all events',
-                content: new OA\JsonContent(type: 'array', items: new OA\Items(ref: new Model(type: Event::class, groups: ['full'])))
+                content: new OA\JsonContent(
+                    type: 'array',
+                    items: new OA\Items(
+                        ref: '#/components/schemas/Event',
+                        example: [
+                            'id' => 1,
+                            'title' => 'SymfonyCon 2024',
+                            'date' => '2024-12-12T19:30:00Z',
+                            'venue' => 'Berlin, Germany',
+                            'capacity' => 500,
+                            'organizer' => 1,
+                            'tickets' => [1, 2, 3]
+                        ]
+                    )
+                )
             )
         ]
     )]

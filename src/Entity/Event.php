@@ -9,7 +9,11 @@ use Doctrine\ORM\Mapping as ORM;
 use OpenApi\Attributes as OA;
 
 #[ORM\Entity(repositoryClass: EventRepository::class)]
-
+#[OA\Schema(
+    description: "Represents an event",
+    type: "object",
+    required: ["title", "date", "venue", "capacity", "organizer"]
+)]
 class Event implements \JsonSerializable
 {
     #[ORM\Id]
@@ -174,6 +178,19 @@ class Event implements \JsonSerializable
         return $this;
     }
 
+    #[OA\Property(
+        description: "Returns the event as a JSON object",
+        type: "object",
+        properties: [
+            new OA\Property(property: "id", type: "integer"),
+            new OA\Property(property: "title", type: "string"),
+            new OA\Property(property: "date", type: "string", format: "date-time"),
+            new OA\Property(property: "venue", type: "string"),
+            new OA\Property(property: "capacity", type: "integer"),
+            new OA\Property(property: "organizer", type: "integer"),
+            new OA\Property(property: "tickets", type: "array", items: new OA\Items(type: "integer"))
+        ]
+    )]
     public function jsonSerialize(): array
     {
         return [

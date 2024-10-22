@@ -6,6 +6,7 @@ use App\Entity\Organizer;
 use App\DTO\OrganizerDTO;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\OrganizerRepository;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
  * Service class for managing organizers.
@@ -15,10 +16,10 @@ class OrganizerService
     private EntityManagerInterface $entityManager;
     private OrganizerRepository $organizerRepository;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, OrganizerRepository $organizerRepository)
     {
         $this->entityManager = $entityManager;
-        $this->organizerRepository = $entityManager->getRepository(Organizer::class);
+        $this->organizerRepository = $organizerRepository;
     }
 
     /**
@@ -118,4 +119,10 @@ class OrganizerService
     {
         return $this->organizerRepository->findAll();
     }
+
+    public function findOneByEmail(string $email): ?Organizer
+    {
+        return $this->organizerRepository->findOneBy(['email' => $email]);
+    }
+
 }

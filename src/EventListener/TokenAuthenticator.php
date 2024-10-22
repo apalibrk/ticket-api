@@ -21,7 +21,6 @@ class TokenAuthenticator
         $token = $request->headers->get('Authorization');
 
         $protectedRoutes = [
-            '/api/organizers' => ['POST'],
             '/api/organizers/{id}' => ['PUT', 'DELETE'],
         ];
 

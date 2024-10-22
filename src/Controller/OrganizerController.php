@@ -12,16 +12,68 @@ use Symfony\Component\Routing\Annotation\Route;
 use OpenApi\Attributes as OA;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/organizers')]
 #[OA\Tag(name: 'Organizers')]
 class OrganizerController extends AbstractController
 {
     private OrganizerService $organizerService;
+    private UserPasswordHasherInterface $passwordHasher;
+    private string $staticToken;
 
     public function __construct(OrganizerService $organizerService)
     {
         $this->organizerService = $organizerService;
+        $this->staticToken = $_ENV['API_TOKEN'] ?? 'default_static_token';
+    }
+
+    #[OA\Post(
+        summary: 'Login an organizer.',
+        requestBody: new OA\RequestBody(
+            description: 'Login credentials',
+            required: true,
+            content: new OA\JsonContent(
+                type: 'object',
+                properties: [
+                    new OA\Property(property: 'email', type: 'string', example: 'john.doe@example.com'),
+                    new OA\Property(property: 'password', type: 'string', example: 'password')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Returns a static token',
+                content: new OA\JsonContent(
+                    type: 'object',
+                    properties: [
+                        new OA\Property(property: 'token', type: 'string', example: 'static_token_value')
+                    ]
+                )
+            ),
+            new OA\Response(response: 401, description: 'Invalid credentials')
+        ]
+    )]
+    #[Route('/login', methods: ['POST'])]
+    public function login(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $email = $data['email'] ?? '';
+        $password = $data['password'] ?? '';
+        $organizer = $this->organizerService->findOneByEmail($email);
+        if (!$organizer ) {
+            return $this->json(['message' => 'Invalid credentials'], JsonResponse::HTTP_UNAUTHORIZED);
+        }
+        if($organizer->getPassword() != $password)
+        {
+            return $this->json(['message' => 'Invalid credentials'], JsonResponse::HTTP_UNAUTHORIZED);
+
+        }
+
+ 
+        return $this->json(['token' => $this->staticToken], JsonResponse::HTTP_ACCEPTED);
     }
 
     #[OA\Post(
@@ -46,29 +98,30 @@ class OrganizerController extends AbstractController
                 content: new OA\JsonContent(ref: new Model(type: Organizer::class, groups: ['full']))
             ),
             new OA\Response(response: 400, description: 'Invalid input'),
-            new OA\Response(response: 401, description: 'Unauthorized'),
-            new OA\Response(response: 403, description: 'Forbidden'),
             new OA\Response(response: 500, description: 'Internal server error')
-        ],
-        security: [
-            new OA\SecurityScheme(
-                securityScheme: 'bearerAuth',
-                type: 'http',
-                scheme: 'bearer'
-            )
         ]
     )]
     #[Route('', methods: ['POST'])]
     public function createOrganizer(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        $organizerDTO = new OrganizerDTO();
-        $organizerDTO->setName($data['name']);
-        $organizerDTO->setEmail($data['email']);
-        $organizerDTO->setPhone($data['phone']);
-        $organizerDTO->setPassword($data['password']); // Consider hashing the password
+        $name = $data['name'] ?? '';
+        $email = $data['email'] ?? '';
+        $password = $data['password'] ?? '';
+        $phone = $data['phone'] ?? '';
 
-        $organizer = $this->organizerService->createOrganizer($organizerDTO);
+        if (empty($name) || empty($email) || empty($password)) {
+            return $this->json(['message' => 'Invalid input'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        $organizer = new OrganizerDTO();
+        $organizer->setName($name);
+        $organizer->setEmail($email);
+        $organizer->setPhone($phone);
+        $organizer->setPassword($password);
+
+        $this->organizerService->createOrganizer($organizer);
+
         return $this->json($organizer, JsonResponse::HTTP_CREATED);
     }
 

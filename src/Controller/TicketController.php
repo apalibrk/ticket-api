@@ -181,12 +181,26 @@ class TicketController extends AbstractController
     }
 
     #[OA\Get(
-        summary: 'List all tickets.',
+        summary: 'List all events.',
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Returns a list of all tickets',
-                content: new OA\JsonContent(type: 'array', items: new OA\Items(ref: new Model(type: Ticket::class, groups: ['full'])))
+                description: 'Returns a list of all events',
+                content: new OA\JsonContent(
+                    type: 'array',
+                    items: new OA\Items(
+                        ref: '#/components/schemas/Event',
+                        example: [
+                            'id' => 1,
+                            'title' => 'SymfonyCon 2024',
+                            'date' => '2024-12-12T19:30:00Z',
+                            'venue' => 'Berlin, Germany',
+                            'capacity' => 500,
+                            'organizer' => 1,
+                            'tickets' => [1, 2, 3]
+                        ]
+                    )
+                )
             )
         ]
     )]
