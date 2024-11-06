@@ -11,17 +11,19 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use OpenApi\Attributes as OA;
 use Nelmio\ApiDocBundle\Annotation\Model;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/events')]
 #[OA\Tag(name: 'Events')]
 class EventController extends AbstractController
 {
     private EventService $eventService;
+    private ValidatorInterface $validator;
 
-    public function __construct(EventService $eventService)
+    public function __construct(EventService $eventService, ValidatorInterface $validator)
     {
         $this->eventService = $eventService;
+        $this->validator = $validator;
     }
 
     #[OA\Get(
@@ -112,14 +114,25 @@ class EventController extends AbstractController
     public function createEvent(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
+
         $eventDTO = new EventDTO(
             null,
-            $data['title'],
-            new \DateTime($data['date']),
-            $data['venue'],
-            $data['capacity'],
-            $data['organizerId']
+            $data['title'] ?? '',
+            isset($data['date']) ? new \DateTime($data['date']) : null,
+            $data['venue'] ?? '',
+            $data['capacity'] ?? 0,
+            $data['organizerId'] ?? 0
         );
+
+        $errors = $this->validator->validate($eventDTO);
+
+        if (count($errors) > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[] = $error->getMessage();
+            }
+            return $this->json(['errors' => $errorMessages], 400);
+        }
 
         $event = $this->eventService->createEvent($eventDTO);
         return $this->json($event, 201);
@@ -162,16 +175,31 @@ class EventController extends AbstractController
     public function updateEvent(int $id, Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
+
         $eventDTO = new EventDTO(
             $id,
-            $data['title'],
-            new \DateTime($data['date']),
-            $data['venue'],
-            $data['capacity'],
-            $data['organizerId']
+            $data['title'] ?? '',
+            isset($data['date']) ? new \DateTime($data['date']) : null,
+            $data['venue'] ?? '',
+            $data['capacity'] ?? 0,
+            $data['organizerId'] ?? 0
         );
 
+        $errors = $this->validator->validate($eventDTO);
+
+        if (count($errors) > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[] = $error->getMessage();
+            }
+            return $this->json(['errors' => $errorMessages], 400);
+        }
+
         $event = $this->eventService->updateEvent($id, $eventDTO);
+        if (!$event) {
+            return $this->json(['message' => 'Event not found'], 404);
+        }
+
         return $this->json($event);
     }
 

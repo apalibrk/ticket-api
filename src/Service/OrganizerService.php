@@ -31,22 +31,6 @@ class OrganizerService
      */
     public function createOrganizer(OrganizerDTO $organizerDTO): Organizer
     {
-        if (empty($organizerDTO->getName())) {
-            throw new \InvalidArgumentException('Organizer name cannot be empty');
-        }
-    
-        if (!filter_var($organizerDTO->getEmail(), FILTER_VALIDATE_EMAIL)) {
-            throw new \InvalidArgumentException('Invalid email format');
-        }
-    
-        if (!preg_match('/^\+?[0-9]{1,4}?[-. ]?(\(?[0-9]{1,4}?\)?[-. ]?)?[0-9]{1,4}[-. ]?[0-9]{1,9}$/', $organizerDTO->getPhone())) {
-            throw new \InvalidArgumentException('Invalid phone number format');
-        }
-    
-        if (strlen($organizerDTO->getPassword()) < 6) {
-            throw new \InvalidArgumentException('Password must be at least 6 characters long');
-        }
-    
         $organizer = new Organizer();
         $organizer->setName($organizerDTO->getName());
         $organizer->setEmail($organizerDTO->getEmail());
@@ -69,22 +53,6 @@ class OrganizerService
      */
     public function updateOrganizer(Organizer $organizer, OrganizerDTO $organizerDTO): Organizer
     {
-        if (empty($organizerDTO->getName())) {
-            throw new \InvalidArgumentException('Organizer name cannot be empty');
-        }
-
-        if (!filter_var($organizerDTO->getEmail(), FILTER_VALIDATE_EMAIL)) {
-            throw new \InvalidArgumentException('Invalid email format');
-        }
-
-        if (!preg_match('/^\+?[0-9]{1,4}?[-. ]?(\(?[0-9]{1,4}?\)?[-. ]?)?[0-9]{1,4}[-. ]?[0-9]{1,9}$/', $organizerDTO->getPhone())) {
-            throw new \InvalidArgumentException('Invalid phone number format');
-        }
-
-        if (!empty($organizerDTO->getPassword()) && strlen($organizerDTO->getPassword()) < 6) {
-            throw new \InvalidArgumentException('Password must be at least 6 characters long');
-        }
-
         $organizer->setName($organizerDTO->getName());
         $organizer->setEmail($organizerDTO->getEmail());
         $organizer->setPhone($organizerDTO->getPhone());

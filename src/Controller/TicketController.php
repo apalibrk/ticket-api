@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\DTO\TicketDTO;
 use App\Entity\Ticket;
-use App\Entity\Event; // Make sure the Event entity is properly imported
+use App\Entity\Event;
 use App\Service\TicketService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -13,16 +13,19 @@ use Symfony\Component\Routing\Annotation\Route;
 use OpenApi\Attributes as OA;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/tickets')]
 #[OA\Tag(name: 'Tickets')]
 class TicketController extends AbstractController
 {
     private TicketService $ticketService;
+    private ValidatorInterface $validator;
 
-    public function __construct(TicketService $ticketService)
+    public function __construct(TicketService $ticketService, ValidatorInterface $validator)
     {
         $this->ticketService = $ticketService;
+        $this->validator = $validator;
     }
 
     #[OA\Post(
@@ -70,6 +73,16 @@ class TicketController extends AbstractController
         $ticketDTO->setStatus($data['status'] ?? 'available');
         $ticketDTO->setEventId($data['eventId'] ?? 0);
 
+        $errors = $this->validator->validate($ticketDTO);
+
+        if (count($errors) > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[] = $error->getMessage();
+            }
+            return $this->json(['errors' => $errorMessages], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
         $ticket = $this->ticketService->createTicket($ticketDTO);
         return $this->json($ticket, JsonResponse::HTTP_CREATED);
     }
@@ -112,6 +125,17 @@ class TicketController extends AbstractController
         $ticketDTO->setSeatNumber($data['seatNumber'] ?? $ticket->getSeatNumber());
         $ticketDTO->setPrice($data['price'] ?? $ticket->getPrice());
         $ticketDTO->setStatus($data['status'] ?? $ticket->getStatus());
+        $ticketDTO->setEventId($ticket->getEvent()->getId());
+
+        $errors = $this->validator->validate($ticketDTO);
+
+        if (count($errors) > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[] = $error->getMessage();
+            }
+            return $this->json(['errors' => $errorMessages], JsonResponse::HTTP_BAD_REQUEST);
+        }
 
         $updatedTicket = $this->ticketService->updateTicket($ticket, $ticketDTO);
         return $this->json($updatedTicket);
@@ -181,23 +205,21 @@ class TicketController extends AbstractController
     }
 
     #[OA\Get(
-        summary: 'List all events.',
+        summary: 'List all tickets.',
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Returns a list of all events',
+                description: 'Returns a list of all tickets',
                 content: new OA\JsonContent(
                     type: 'array',
                     items: new OA\Items(
-                        ref: '#/components/schemas/Event',
+                        ref: '#/components/schemas/Ticket',
                         example: [
                             'id' => 1,
-                            'title' => 'SymfonyCon 2024',
-                            'date' => '2024-12-12T19:30:00Z',
-                            'venue' => 'Berlin, Germany',
-                            'capacity' => 500,
-                            'organizer' => 1,
-                            'tickets' => [1, 2, 3]
+                            'seatNumber' => 'A1',
+                            'price' => 50.0,
+                            'status' => 'available',
+                            'event' => 1
                         ]
                     )
                 )

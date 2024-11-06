@@ -2,13 +2,29 @@
 
 namespace App\DTO;
 
+use Symfony\Component\Validator\Constraints as Assert;
+
 class EventDTO
 {
+    #[Assert\PositiveOrZero]
     public ?int $id;
+
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
     public string $title;
+
+    #[Assert\NotBlank]
+    #[Assert\DateTime]
     public \DateTimeInterface $date;
+
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
     public string $venue;
+
+    #[Assert\Positive]
     public int $capacity;
+
+    #[Assert\PositiveOrZero]
     public ?int $organizerId;
 
     public function __construct(

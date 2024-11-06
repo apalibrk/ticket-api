@@ -31,22 +31,6 @@ class EventService
      */
     public function createEvent(EventDTO $eventDTO): Event
     {
-        if ($eventDTO->date < new \DateTime()) {
-            throw new \InvalidArgumentException('Event date cannot be in the past');
-        }
-
-        if (empty($eventDTO->title)) {
-            throw new \InvalidArgumentException('Event title cannot be empty');
-        }
-
-        if (empty($eventDTO->venue)) {
-            throw new \InvalidArgumentException('Event venue cannot be empty');
-        }
-
-        if ($eventDTO->capacity <= 0) {
-            throw new \InvalidArgumentException('Event capacity must be greater than zero');
-        }
-
         $organizer = $this->entityManager->getRepository(Organizer::class)->find($eventDTO->organizerId);
         if (!$organizer) {
             throw new \InvalidArgumentException('Organizer not found');
@@ -83,18 +67,6 @@ class EventService
 
         if ($eventDTO->date < new \DateTime()) {
             throw new \InvalidArgumentException('Event date cannot be in the past');
-        }
-
-        if (empty($eventDTO->title)) {
-            throw new \InvalidArgumentException('Event title cannot be empty');
-        }
-
-        if (empty($eventDTO->venue)) {
-            throw new \InvalidArgumentException('Event venue cannot be empty');
-        }
-
-        if ($eventDTO->capacity <= 0) {
-            throw new \InvalidArgumentException('Event capacity must be greater than zero');
         }
 
         $organizer = $this->entityManager->getRepository(Organizer::class)->find($eventDTO->organizerId);

@@ -31,14 +31,6 @@ class TicketService
      */
     public function createTicket(TicketDTO $ticketDTO): Ticket
     {
-        if (empty($ticketDTO->getSeatNumber())) {
-            throw new \InvalidArgumentException('Seat number cannot be empty');
-        }
-
-        if ($ticketDTO->getPrice() < 0) {
-            throw new \InvalidArgumentException('Ticket price cannot be negative');
-        }
-
         $status = 'available';
 
         $event = $this->entityManager->getRepository(Event::class)->find($ticketDTO->getEventId());
@@ -68,14 +60,6 @@ class TicketService
      */
     public function updateTicket(Ticket $ticket, TicketDTO $ticketDTO): Ticket
     {
-        if (empty($ticketDTO->getSeatNumber())) {
-            throw new \InvalidArgumentException('Seat number cannot be empty');
-        }
-
-        if ($ticketDTO->getPrice() < 0) {
-            throw new \InvalidArgumentException('Ticket price cannot be negative');
-        }
-
         $ticket->setSeatNumber($ticketDTO->getSeatNumber());
         $ticket->setPrice($ticketDTO->getPrice());
         $ticket->setStatus($ticketDTO->getStatus());
